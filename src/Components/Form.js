@@ -1,7 +1,8 @@
 import React, {useState, useEffect} from "react";
 import axios from "axios";
 import * as yup from "yup";
-import { Link } from "react-router-dom"
+
+
 
 const formSchema = yup.object().shape({
     name: yup.string().required("Name is a required field.").min(2, "name must be more than 2 characters"),
@@ -26,7 +27,8 @@ export default function Form() {
         sausage: false,
         specInstr: ""
     })
-    // state for our errors
+    
+    // for our errors
     const [errors, setErrors] = useState({
         name: "",
         size: "",
@@ -38,7 +40,7 @@ export default function Form() {
     })
 
     //state for button
-    const [button, setButton] = useState(true);
+    const [buttonDisabled, setButtonDisabled] = useState(true);
 
     // state for our post request 
     const [post, setPost] = useState([]);
@@ -49,22 +51,38 @@ export default function Form() {
     const inputChange = e => {
         e.persist();
         const newFormData = {
-            ...formState,
-            [e.target.name]:
-              e.target.type === "checkbox" ? e.target.checked : e.target.value
-          };
-  
-          validateChange(e);
-          setFormState(newFormData);
+          ...formState,
+          [e.target.name]:
+            e.target.type === "checkbox" ? e.target.checked : e.target.value
         };
-     
-    //button disabled
-    useEffect(() => {
-        formSchema.isValid(formState).then(valid => {
-            setButton(!valid);
-        });
-    }, [formState]);
 
+        validateChange(e);
+        setFormState(newFormData);
+      };
+    //button disabled
+            useEffect(() => {
+                formSchema.isValid(formState).then(valid => {
+                setButtonDisabled(!valid);
+                });
+            }, [formState]);
+            //validate changes
+            const validateChange = e => {
+                yup
+                  .reach(formSchema, e.target.name)
+                  .validate(e.target.value)
+                  .then(valid => {
+                    setErrors({
+                      ...errors,
+                      [e.target.name]: ""
+                    });
+                  })
+                  .catch(err => {
+                    setErrors({
+                      ...errors,
+                      [e.target.name]: err.errors[0]
+                    });
+                  });
+              };
         //on submit
 
     const formSubmit = e => {
@@ -87,27 +105,114 @@ export default function Form() {
             })
             .catch(err => console.log("honey somethins broken", err.response));
     };
-            //validate changes
-            const validateChange = e => {
-                yup
-                  .reach(formSchema, e.target.name)
-                  .validate(e.target.value)
-                  .then(valid => {
-                    setErrors({
-                      ...errors,
-                      [e.target.name]: ""
-                    });
-                  })
-                  .catch(err => {
-                    setErrors({
-                      ...errors,
-                      [e.target.name]: err.errors[0]
-                    });
-                  });
-              };
 
     
 
-   return()
+   return(
+
+    <form onSubmit = {formSubmit}>
+    <h1>Place an Order!</h1>
+    <label htmlFor = 'name'>
+        What is your name?
+        <br/>
+        <input
+        type = 'text'
+        name = 'name'
+        id = 'nameinput'
+        placeholder = 'Name'
+        value={formState.name}
+        onChange={inputChange}
+        />
+    </label>
+            <br />
+            <label htmlFor = 'size'>
+
+            <h2>How Big Would you like it!</h2>
+            
+            <br/>
+            <select name = 'size' id = 'sizeinput' onChange = {inputChange}>
+                    <option name="default" value={null}></option>
+                    <option name="Sm" value='Sm'>Sm</option>
+                    <option name="Lg" value='Lg'>Lg</option>
+                    <option name="XL" value='XL'>XL</option>
+                    <option name="XxL" value='XL'>Super Fat</option>
+                </select>
+            </label>
+            <br/>
+
+            <div className = 'toppingsChecklist'>
+
+            <h2>Select Toppings Honey!</h2>
+
+                <label htmlFor = 'pepperoni'>
+                    
+                    <input
+                        type='checkbox'
+                        name='pepperoni'
+                        id = 'pepperoniCheckBox'
+                        checked={formState.pepperoni} 
+                        onChange={inputChange}
+                    /> 
+
+                   <h3>Pepperoni</h3> 
+                </label>
+                <br/>
+
+                <label htmlFor = 'mushrooms'>
+                    <input
+                        type='checkbox'
+                        name='mushrooms'
+                        id = 'mushroomsCheckBox'
+                        checked={formState.mushrooms} 
+                        onChange={inputChange}
+                    />
+                   <h3> Mushrooms</h3>
+                </label>
+                <br/>
+
+                <label htmlFor = 'peppers'>
+                    <input
+                        type='checkbox'
+                        name='peppers'
+                        id = 'peppersCheckBox'
+                        checked={formState.peppers} 
+                        onChange={inputChange}
+                    /> 
+                   <h3> Peppers</h3>
+                </label>
+                <br/>
+
+                <label htmlFor = 'sausage'>
+                    <input
+                        type='checkbox'
+                        name='sausage'
+                        id = 'sausageCheckBox'
+                        checked={formState.sausage} 
+                        onChange={inputChange}
+                    />
+                   <h3> Sausage</h3>
+                </label>
+                <br/>
+            </div>
+
+            <label htmlFor = 'Special Instructions'>
+            <h3> You need Mama to do something Special for you?</h3>
+                <br/>
+                <textarea
+                name = 'specInstr'
+                id = 'specInstrInput'
+                placeholder = 'Send me your sugar!'
+                value={formState.specInstr} 
+                onChange={inputChange}
+                />
+            </label>
+            <br/> <br/> <br/>
+            <button name = 'submit' disabled={buttonDisabled}>Pizzas on its way love</button>
+            <pre>{JSON.stringify(post, null, 2)}</pre>
+
+            
+
+            </form>
+   )
 
 }

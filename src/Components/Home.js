@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Route, Link } from "react-router-dom"
 
-const Home = () => {
+function Home(){
     return (
         <div className="home">
             <h1>Big MAMA's Pizza House!! </h1>
